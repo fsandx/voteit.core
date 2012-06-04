@@ -467,3 +467,58 @@ class richtext_validator(TestCase):
     def test_text_with_html(self):
         node = None
         self.assertRaises(colander.Invalid, self._cut, node, "Here's some html with forbidden tags <script>alert('test');</script>that should <strong>not</strong> pass.")
+        
+        
+class CSVParticipantValidatorTests(TestCase):
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _cut(self):
+        from voteit.core.validators import CSVParticipantValidator
+        return CSVParticipantValidator(self.context, self.api)
+    
+    def _api(self, context=None, request=None):
+        from voteit.core.views.api import APIView
+        context = context and context or testing.DummyResource()
+        request = request and request or testing.DummyRequest()
+        return APIView(context, request)
+
+    def test_good(self):
+        self.context = _fixture(self.config)
+        self.api = self._api(self.context)
+        obj = self._cut()
+        node = None
+        obj(node, "user1;password1;user1@test.com;Dummy;User\n")
+        
+    def test_no_username(self):
+        self.context = _fixture(self.config)
+        self.api = self._api(self.context)
+        obj = self._cut()
+        node = None
+        self.assertRaises(colander.Invalid, obj, node, ";password1;user1@test.com;Dummy;User\n")
+
+    def test_bad_username(self):
+        self.context = _fixture(self.config)
+        self.api = self._api(self.context)
+        obj = self._cut()
+        node = None
+        self.assertRaises(colander.Invalid, obj, node, "User1;password1;user1@test.com;Dummy;User\n")
+        
+    def test_not_unique(self):
+        self.context = _fixture(self.config)
+        self.api = self._api(self.context)
+        obj = self._cut()
+        node = None
+        self.assertRaises(colander.Invalid, obj, node, "tester;password1;user1@test.com;Dummy;User\n")
+
+    def test_bad_password(self):
+        self.context = _fixture(self.config)
+        self.api = self._api(self.context)
+        obj = self._cut()
+        node = None
+        self.assertRaises(colander.Invalid, obj, node, "user1;pwd;user1@test.com;Dummy;User\n")
+        
