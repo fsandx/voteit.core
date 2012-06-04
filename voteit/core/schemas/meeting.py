@@ -9,7 +9,7 @@ from pyramid.security import authenticated_userid
 
 from voteit.core.validators import html_string_validator
 from voteit.core.validators import richtext_validator
-from voteit.core.validators import csv_validator
+from voteit.core.validators import csv_participant_validator
 
 from voteit.core import VoteITMF as _
 from voteit.core import security 
@@ -182,5 +182,5 @@ class AddParticipantsSchema(colander.Schema):
                                                  password will be generated); email (not mandatory, but recommended); 
                                                  firstname; lastname"""),
                                  widget = deform.widget.TextAreaWidget(rows=25, cols=75),
-                                 validator = csv_validator,
+                                 validator = csv_participant_validator,
     )

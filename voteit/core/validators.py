@@ -1,5 +1,8 @@
 import re
 import colander
+import csv
+
+from StringIO import StringIO
 from BeautifulSoup import BeautifulSoup
 from webhelpers.html.tools import strip_tags
 from pyramid.traversal import find_interface
@@ -259,13 +262,14 @@ def richtext_validator(node, value):
     if invalid:
         raise colander.Invalid(node, _(u"Contains forbidden HTML tags."))
 
+
 @colander.deferred
-def csv_validator(node, kw):
+def csv_participant_validator(node, kw):
     context = kw['context']
     api = kw['api']
-    return CSVValidator(context, api)
+    return CSVParticipantValidator(context, api)
     
-class CSVValidator(object):
+class CSVParticipantValidator(object):
     """
         validates that input is a valid csv file
     """
@@ -275,9 +279,6 @@ class CSVValidator(object):
     
     def __call__(self, node, value):
         html_string_validator(node, value)
-        
-        import csv
-        from StringIO import StringIO
         
         users = find_root(self.context).users
         
