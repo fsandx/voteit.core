@@ -501,7 +501,7 @@ class MeetingView(BaseView):
             msg = _('added_participants_text', default=u"Successfully added ${participant_count} participants", mapping={'participant_count':participant_count} )
             self.api.flash_messages.add(msg)
             
-            self.response['count'] = participant_count
+            self.response['heading'] = "%s %s" % (participant_count, self.api.pluralize(self.api.translate(_("participant added")), self.api.translate(_("participants added")), participant_count))
             self.response['participants'] = output
             return Response(render("templates/add_participants.pt", self.response, request = self.request))
 

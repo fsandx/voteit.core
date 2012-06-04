@@ -7,10 +7,7 @@
 	  i18n:domain="voteit.core">
 <body>
 <h1 metal:fill-slot="page_heading">
-    <span i18n:translate="">
-        <span tal:replace="count" i18n:name="count">5</span>
-        participants added
-    </span>
+        ${heading}
 </h1>
 <div metal:fill-slot="content" class="content_wrapper">
     <table class="listing">
