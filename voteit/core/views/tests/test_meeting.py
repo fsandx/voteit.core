@@ -3,6 +3,7 @@ import unittest
 from pyramid import testing
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid_mailer import get_mailer
+from webob.multidict import MultiDict
 
 from voteit.core.testing_helpers import bootstrap_and_fixture
 from voteit.core.testing_helpers import register_security_policies
@@ -30,8 +31,16 @@ class MeetingViewTests(unittest.TestCase):
         return meeting
 
     def _load_vcs(self):
+        self.config.registry.settings['default_timezone_name'] = "Europe/Stockholm"
+        self.config.registry.settings['default_locale_name'] = 'sv'
+        self.config.include('voteit.core.models.date_time_util')
         self.config.scan('voteit.core.views.components.main')
         self.config.scan('voteit.core.views.components.meeting')
+        self.config.scan('voteit.core.views.components.head')
+        self.config.scan('voteit.core.views.components.global_actions')
+        self.config.scan('voteit.core.views.components.meeting_actions')
+        self.config.scan('voteit.core.views.components.navigation')
+        self.config.scan('voteit.core.views.components.help_actions')
         
     def test_meeting_view(self):
         self.config.testing_securitypolicy(userid='dummy',
@@ -621,3 +630,56 @@ class MeetingViewTests(unittest.TestCase):
         obj = self._cut(context, request)
         response = obj.minutes()
         self.assertIn('agenda_items', response)
+        
+    def test_add_participants(self):
+        self.config.scan('voteit.core.schemas.meeting')
+        self.config.include('voteit.core.models.flash_messages')
+        self.config.testing_securitypolicy(userid='dummy',
+                                           permissive=True)
+        context = self._fixture()
+        request = testing.DummyRequest()
+        obj = self._cut(context, request)
+        response = obj.add_participants()
+        self.assertIn('form', response)
+        
+    def test_add_participants_cancel(self):
+        self.config.scan('voteit.core.schemas.meeting')
+        self.config.include('voteit.core.models.flash_messages')
+        self.config.testing_securitypolicy(userid='dummy',
+                                           permissive=True)
+        context = self._fixture()
+        request = testing.DummyRequest(post={'cancel': 'cancel'})
+        obj = self._cut(context, request)
+        response = obj.add_participants()
+        self.assertEqual(response.location, 'http://example.com/m/')
+        
+    def test_add_participants_save(self):
+        self.config.scan('voteit.core.schemas.meeting')
+        self.config.include('voteit.core.models.flash_messages')
+        self.config.testing_securitypolicy(userid='admin',
+                                           permissive=True)
+        self._load_vcs()
+        context = self._fixture()
+        request = testing.DummyRequest(post = MultiDict([('csv', 'user1;password1;user1@test.com;Dummy;User\n'),
+                                                         ('__start__', 'roles:sequence'),
+                                                         ('checkbox', 'role:Admin'),
+                                                         ('__end__', 'roles:sequence'),
+                                                         ('add', 'add')]))
+        obj = self._cut(context, request)
+        response = obj.add_participants()
+        self.assertIn('1 participant added', response.body)
+        
+    def test_add_participants_validation_error(self):
+        self.config.scan('voteit.core.schemas.meeting')
+        self.config.include('voteit.core.models.flash_messages')
+        self.config.testing_securitypolicy(userid='dummy',
+                                           permissive=True)
+        context = self._fixture()
+        request = testing.DummyRequest(post = MultiDict([('csv', ';password1;user1@test.com;Dummy;User\n'),
+                                                         ('__start__', 'roles:sequence'),
+                                                         ('checkbox', 'role:Admin'),
+                                                         ('__end__', 'roles:sequence'),
+                                                         ('add', 'add')]))
+        obj = self._cut(context, request)
+        response = obj.add_participants()
+        self.assertIn('form', response)
