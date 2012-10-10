@@ -77,6 +77,7 @@ def required_components(config):
     config.include('voteit.core.deform_bindings')
     #For password storage
     config.scan('betahaus.pyracont.fields.password')
+    config.include('betahaus.pyracont.transformation')
 
     cache_ttl_seconds = int(config.registry.settings.get('cache_ttl_seconds', 7200))
     config.add_static_view('static', '%s:static' % PROJECTNAME, cache_max_age = cache_ttl_seconds)
@@ -91,6 +92,7 @@ def required_components(config):
     config.include(register_plugins)
     config.include(register_dynamic_fanstatic_resources)
     config.include(adjust_view_component_order)
+    config.include(add_default_transformation_chains)
 
 
 def register_plugins(config):
@@ -155,6 +157,20 @@ def register_dynamic_fanstatic_resources(config):
     util = config.registry.getUtility(IFanstaticResources)
     for res in DEFAULT_FANSTATIC_RESOURCES:
         util.add(*res)
+
+
+DEFAULT_TRANSFORMATION_CHAINS = dict(
+    discussion_text_out = ('auto_link', 'nl2br', 'tag2links', 'at_userid_link'),
+    discussion_text_in = (),
+    proposal_text_out = ('auto_link', 'nl2br', 'tag2links', 'at_userid_link'),
+    proposal_text_in = (),
+)
+
+def add_default_transformation_chains(config):
+    settings = config.registry.settings
+    for (k, v) in DEFAULT_TRANSFORMATION_CHAINS.items():
+        if 'transformation.%s' % k not in settings:
+            settings['transformation.%s' % k]  = "\n".join(v)
 
 
 def includeme(config):

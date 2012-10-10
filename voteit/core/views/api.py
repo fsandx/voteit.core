@@ -14,6 +14,7 @@ from pyramid.interfaces import IAuthorizationPolicy
 from pyramid.decorator import reify
 from pyramid.i18n import get_localizer
 from betahaus.pyracont.interfaces import IContentFactory
+from betahaus.pyracont.interfaces import ITransformUtil
 from betahaus.viewcomponent import render_view_group
 from betahaus.viewcomponent.interfaces import IViewGroup
 from webhelpers.html.tools import auto_link
@@ -63,6 +64,10 @@ class APIView(object):
             See :mod:`voteit.core.interfaces.IDateTimeUtil` for docs.
         """
         return self.request.registry.getUtility(IDateTimeUtil)
+
+    @reify
+    def transform_util(self):
+        return self.request.registry.getUtility(ITransformUtil)
 
     @property
     def user_profile(self):
@@ -301,6 +306,9 @@ class APIView(object):
         if 'api' not in kw:
             kw['api'] = self
         return util[key](context, request, **kw)
+
+    def transform_value(self, value, chain_name):
+        return self.transform_util(value, chain_name)
 
     def transform(self, text):
         text = sanitize(text)
