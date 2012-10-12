@@ -123,3 +123,72 @@ class StripAndTruncateTests(unittest.TestCase):
         truncated = self._fut(text, 100)
         self.assertEqual(truncated, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris at enim nec nunc facilisis semper. S&lt;...&gt;') 
 
+
+class TruncateTests(unittest.TestCase):
+        
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+        
+    def test_truncate_long(self):
+        
+        text = u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " \
+               u"Nam luctus porta justo a pulvinar. Lorem ipsum dolor sit amet, " \
+               u"consectetur adipiscing elit. In hac habitasse platea dictumst. " \
+               u"Sed sit amet tortor at nisl malesuada tristique. Nulla faucibus " \
+               u"egestas felis, at ullamcorper arcu sollicitudin amet."
+                
+        truncated_text = u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " \
+                         u"Nam luctus porta justo a pulvinar. Lorem ipsum dolor sit amet, " \
+                         u"consectetur adipiscing elit. In hac habitasse platea dictumst. " \
+                         u"Sed sit amet tortor at nisl malesuada tristique. Nulla faucibus …"
+
+        from voteit.core.views.components.discussions import truncate
+        
+        self.assertEqual(truncate(text, 240), (truncated_text, True))
+        
+    def test_truncate_short(self):
+        
+        text = u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " \
+               u"Nam luctus porta justo a pulvinar. Lorem ipsum dolor sit amet, " \
+               u"consectetur adipiscing elit. In hac habitasse platea dictumst."
+                
+        truncated_text = u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " \
+                         u"Nam luctus porta justo a pulvinar. Lorem ipsum dolor sit amet, " \
+                         u"consectetur adipiscing elit. In hac habitasse platea dictumst."
+
+        from voteit.core.views.components.discussions import truncate
+        
+        self.assertEqual(truncate(text, 240), (truncated_text, False))
+        
+    def test_truncate_exakt_length(self):
+        
+        text = u"Duis non tortor urna. Mauris at mi risus, non consectetur elit. " \
+                "Donec consectetur tempor elementum. Nunc vehicula ipsum a dolor " \
+                "mattis cursus. Maecenas eget eros mauris. Vestibulum ullamcorper " \
+                "rutrum lectus a tempor. Vivamus consequat amet."
+                
+        truncated_text = u"Duis non tortor urna. Mauris at mi risus, non consectetur elit. " \
+                          "Donec consectetur tempor elementum. Nunc vehicula ipsum a dolor " \
+                          "mattis cursus. Maecenas eget eros mauris. Vestibulum ullamcorper " \
+                          "rutrum lectus a tempor. Vivamus consequat amet."
+
+        from voteit.core.views.components.discussions import truncate
+        
+        self.assertEqual(truncate(text, 240), (truncated_text, False))
+        
+    def test_truncate_no_length(self):
+        
+        text = u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " \
+               u"Nam luctus porta justo a pulvinar. Lorem ipsum dolor sit amet, " \
+               u"consectetur adipiscing elit. In hac habitasse platea dictumst."
+                
+        truncated_text = u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " \
+                         u"Nam luctus porta justo a pulvinar. Lorem ipsum dolor sit amet, " \
+                         u"consectetur adipiscing elit. In hac habitasse platea dictumst."
+
+        from voteit.core.views.components.discussions import truncate
+        
+        self.assertEqual(truncate(text, None), (truncated_text, False))

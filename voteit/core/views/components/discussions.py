@@ -9,27 +9,8 @@ from pyramid.renderers import render
 from voteit.core import VoteITMF as _
 from voteit.core.models.interfaces import IMeeting
 from voteit.core.security import DELETE
-from voteit.core.htmltruncate import htmltruncate
+from voteit.core.helpers import truncate
 
-import logging
-log = logging.getLogger(__name__)
-
-#FIXME: needs a way to set default value on this on creation of meeting
-#FIXME: This should not be here - MOVE!
-def truncate(text, length=240):
-    try:
-        if length and length > 0:
-            trunc_text = htmltruncate.truncate(text, length, u'…')
-        else:
-            trunc_text = text
-    # If the html tags doesn't match up return the complete text
-    except htmltruncate.UnbalancedError: # pragma : no cover
-        trunc_text = text
-    except Exception, e:
-        trunc_text = text
-        log.error("Could not truncate text: %s", text)
-
-    return (trunc_text, text != trunc_text)
 
 @view_action('discussions', 'listing')
 def discussions_listing(context, request, va, **kw):

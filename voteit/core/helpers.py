@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 import re
 
 from pyramid.threadlocal import get_current_request
@@ -76,3 +78,24 @@ def strip_and_truncate(text, limit=200):
     if len(text) > limit:
         text = u"%s<...>" % nl2br(text[:limit])
     return nl2br(text)
+
+def truncate(text, length=240):
+    ''' returns text truncated to closest withspace after 
+        length and a flag if it was truncated 
+    '''
+
+    # if text is shorter then lenght return full text 
+    if not length or len(text) <= length:
+        return (text, False)
+    
+    # find first whitespace after length
+    m = re.search("\s+", text[length:]) 
+    
+    # no whitespace after length, return full text
+    if not m:
+        return (text, False)
+    
+    # cut text at the first whitespace after lenght
+    trunc = u"%s …" % text[:length+m.start()]
+
+    return (trunc, text != trunc)
