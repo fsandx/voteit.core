@@ -9,19 +9,6 @@ from voteit.core.models.interfaces import IMeeting
 from voteit.core.models.tags import TAG_PATTERN
 
 
-#        text = sanitize(text)
-#        text = auto_link(text, link='urls')
-#        text = nl2br(text)
-#        if self.meeting.get_field_value('tags_enabled', True):
-#            text = tags2links(unicode(text), self.context, self.request)
-#        text = at_userid_link(text, self.context, self.request)
-#        return text
-
-
-
-#    discussion_text_out = ('auto_link', 'nl2br', 'tag2links', 'at_userid_link'),
-
-
 AT_PATTERN = re.compile(r'(\A|\s)@([a-zA-Z1-9]{1}[\w-]+)', flags=re.UNICODE)
 
 
@@ -30,13 +17,11 @@ class AutoLink(Transformation):
     name = 'auto_link'
     
     def appstruct(self, appstruct, node_name, **kw):
-        if node_name not in appstruct:
-            return #nothing to do
         appstruct[node_name] = self.simple(appstruct[node_name], **kw)
 
     def simple(self, value, **kw):
         from webhelpers.html.tools import auto_link
-        return auto_link(text, link='urls')
+        return auto_link(value, link='urls')
 
 
 @transformator()
@@ -44,8 +29,6 @@ class NL2BR(Transformation):
     name = 'nl2br'
     
     def appstruct(self, appstruct, node_name, **kw):
-        if node_name not in appstruct:
-            return #nothing to do
         appstruct[node_name] = self.simple(appstruct[node_name], **kw)
 
     def simple(self, value, **kw):
@@ -58,8 +41,6 @@ class Tag2Links(Transformation):
     name = 'tag2links'
     
     def appstruct(self, appstruct, node_name, **kw):
-        if node_name not in appstruct:
-            return #nothing to do
         appstruct[node_name] = self.simple(appstruct[node_name], **kw)
 
     def simple(self, value, **kw):
@@ -80,8 +61,6 @@ class AtUseridLink(Transformation):
     name = 'at_userid_link'
     
     def appstruct(self, appstruct, node_name, **kw):
-        if node_name not in appstruct:
-            return #nothing to do
         appstruct[node_name] = self.simple(appstruct[node_name], **kw)
 
     def simple(self, value, **kw):
