@@ -169,8 +169,8 @@ DEFAULT_TRANSFORMATION_CHAINS = dict(
 def add_default_transformation_chains(config):
     settings = config.registry.settings
     for (k, v) in DEFAULT_TRANSFORMATION_CHAINS.items():
-        if 'transformation.%s' % k not in settings:
-            settings['transformation.%s' % k]  = "\n".join(v)
+        if 'transform.%s' % k not in settings:
+            settings['transform.%s' % k]  = "\n".join(v)
 
 
 def includeme(config):
