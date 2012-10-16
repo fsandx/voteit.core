@@ -174,3 +174,12 @@ class Tags2LinksTests(unittest.TestCase):
         obj.appstruct(appstruct, 'text', request=self.request)
         expected = 'I like <a class="tag" href="/m/ai/?tag=pizza">#pizza</a>!? and <a class="tag" href="/m/ai/?tag=some">#some</a>\'other\'things,'
         self.assertEqual(appstruct['text'], expected)
+
+    def test_tags_disabled(self):
+        obj = self._cut()
+        from pyramid.traversal import find_interface
+        from voteit.core.models.interfaces import IMeeting
+        meeting = find_interface(self.request.context, IMeeting)
+        meeting.set_field_value('tags_enabled', False)
+        value = obj.simple(u'#åäöÅÄÖ', request=self.request)
+        self.assertNotIn(u'/m/ai/?tag=%C3%A5%C3%A4%C3%B6%C3%85%C3%84%C3%96', value)

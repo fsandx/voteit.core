@@ -46,6 +46,11 @@ class Tag2Links(Transformation):
     def simple(self, value, **kw):
         from webhelpers.html import HTML
         request = kw['request']
+        context = request.context
+        
+        meeting = find_interface(context, IMeeting)
+        if not meeting.get_field_value('tags_enabled', True):
+            return value
 
         def handle_match(matchobj):
             pre, tag, post = matchobj.group(1, 2, 3)
@@ -66,9 +71,10 @@ class AtUseridLink(Transformation):
     def simple(self, value, **kw):
         from webhelpers.html import HTML
         request = kw['request']
+        context = request.context
 
-        users = find_root(request.context).users
-        meeting = find_interface(request.context, IMeeting)
+        users = find_root(context).users
+        meeting = find_interface(context, IMeeting)
     
         def handle_match(matchobj):
             # The pattern contains a space so we only find usernames that 
