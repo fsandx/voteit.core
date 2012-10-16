@@ -92,7 +92,7 @@ class AgendaItemView(BaseView):
 
     @view_config(context=IDiscussionPost, name="more", permission=VIEW, renderer='json')
     def discussion_more(self):
-        return {'body': self.api.transform(self.context.get_field_value('title'))}
+        return {'body': self.api.transform(self.context.get_field_value('title'), 'discussion_text_out')}
     
     @view_config(context=IAgendaItem, name="discussions", permission=VIEW)
     def discussions(self):

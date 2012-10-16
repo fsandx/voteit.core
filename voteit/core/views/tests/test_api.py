@@ -376,107 +376,56 @@ class TestTransform(unittest.TestCase):
     def _context(self):
         register_catalog(self.config)
         self.config.testing_securitypolicy('admin', permissive = True)
+
+        self.config.include('betahaus.pyracont.transformation')
+        self.config.registry.settings['transform.discussion_text_out'] = 'auto_link\nnl2br\ntag2links\nat_userid_link'
+        self.config.scan('voteit.core.models.transformation')
+        
         root = bootstrap_and_fixture(self.config)
         from voteit.core.models.meeting import Meeting
         from voteit.core.models.agenda_item import AgendaItem
-        from voteit.core.models.discussion_post import DiscussionPost
         root['m'] = Meeting()
-        ai = root['m']['ai'] = AgendaItem()
-        ai['d1'] = dp = DiscussionPost()
-        return dp
+        root['m']['ai'] = ai = AgendaItem()
+        return ai
     
     def test_newline_to_br(self):
         context = self._context()
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(context=context)
         obj = self._cut(context, request)
-        context.set_field_value('text', 'test\ntest')
-        self.assertEqual(unicode(obj.transform(context.get_field_value('text'))), unicode('test<br />\ntest'))
-
-    def test_nl2br_several_runs_should_not_add_more_brs(self):
-        context = self._context()
-        request = testing.DummyRequest()
-        obj = self._cut(context, request)
-        context.title = "Hello\nthere"
-        res = obj.transform(context.get_field_value('title'))
-        context.title = res
-        result = obj.transform(context.get_field_value('title'))
-        self.assertEqual(result.count('<br />'), 1)
+        self.assertEqual(unicode(obj.transform('test\ntest', 'discussion_text_out')), unicode('test<br />\ntest'))
 
     def test_autolinking(self):
         context = self._context()
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(context=context)
         obj = self._cut(context, request)
-        context.set_field_value('text', _DUMMY_URL_MESSAGE)
         self.maxDiff = None
-        self.assertEqual(unicode(obj.transform(context.get_field_value('text'))), _DUMMY_URL_EXPECTED_RESULT)
-
-    def test_autolinking_several_runs(self):
-        context = self._context()
-        request = testing.DummyRequest()
-        obj = self._cut(context, request)
-        context.set_field_value('text', _DUMMY_URL_MESSAGE)
-        first_run = obj.transform(context.get_field_value('text'))
-        context.set_field_value('text', first_run)
-        self.maxDiff = None
-        self.assertEqual(unicode(obj.transform(context.get_field_value('text'))), _DUMMY_URL_EXPECTED_RESULT)
+        self.assertEqual(unicode(obj.transform(_DUMMY_URL_MESSAGE, 'discussion_text_out')), _DUMMY_URL_EXPECTED_RESULT)
         
     def test_mention(self):
         context = self._context()
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(context=context)
         obj = self._cut(context, request)
-        context.set_field_value('text', _DUMMY_MENTION_MESSAGE)
         self.maxDiff = None
-        self.assertEqual(unicode(obj.transform(context.get_field_value('text'))), _DUMMY_MENTION_EXPECTED_RESULT)
-
-    def test_mention_several_runs(self):
-        context = self._context()
-        request = testing.DummyRequest()
-        obj = self._cut(context, request)
-        context.set_field_value('text', _DUMMY_MENTION_MESSAGE)
-        first_run = obj.transform(context.get_field_value('text'))
-        context.set_field_value('text', first_run)
-        self.maxDiff = None
-        self.assertEqual(unicode(obj.transform(context.get_field_value('text'))), _DUMMY_MENTION_EXPECTED_RESULT)
+        self.assertEqual(unicode(obj.transform(_DUMMY_MENTION_MESSAGE, 'discussion_text_out')), _DUMMY_MENTION_EXPECTED_RESULT)
         
     def test_tags(self):
         context = self._context()
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(context=context)
         obj = self._cut(context, request)
-        context.set_field_value('text', _DUMMY_TAG_MESSAGE)
         self.maxDiff = None
-        self.assertEqual(unicode(obj.transform(context.get_field_value('text'))), _DUMMY_TAG_EXPECTED_RESULT)
-
-    def test_tags_several_runs(self):
-        context = self._context()
-        request = testing.DummyRequest()
-        obj = self._cut(context, request)
-        context.set_field_value('text', _DUMMY_TAG_MESSAGE)
-        first_run = obj.transform(context.get_field_value('text'))
-        context.set_field_value('text', first_run)
-        self.maxDiff = None
-        self.assertEqual(unicode(obj.transform(context.get_field_value('text'))), _DUMMY_TAG_EXPECTED_RESULT)
+        self.assertEqual(unicode(obj.transform(_DUMMY_TAG_MESSAGE, 'discussion_text_out')), _DUMMY_TAG_EXPECTED_RESULT)
         
     def test_all_together(self):
         context = self._context()
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(context=context)
         obj = self._cut(context, request)
-        context.set_field_value('text', _DUMMY_URL_MESSAGE+"\n"+_DUMMY_MENTION_MESSAGE+"\n"+_DUMMY_TAG_MESSAGE)
         self.maxDiff = None
-        self.assertEqual(unicode(obj.transform(context.get_field_value('text'))), _DUMMY_URL_EXPECTED_RESULT+"<br />\n"+_DUMMY_MENTION_EXPECTED_RESULT+"<br />\n"+_DUMMY_TAG_EXPECTED_RESULT)
-        
-    def test_all_togetherseveral_runs(self):
-        context = self._context()
-        request = testing.DummyRequest()
-        obj = self._cut(context, request)
-        context.set_field_value('text', _DUMMY_URL_MESSAGE+"\n"+_DUMMY_MENTION_MESSAGE+"\n"+_DUMMY_TAG_MESSAGE)
-        first_run = obj.transform(context.get_field_value('text'))
-        context.set_field_value('text', first_run)
-        self.maxDiff = None
-        self.assertEqual(unicode(obj.transform(context.get_field_value('text'))), _DUMMY_URL_EXPECTED_RESULT+"<br />\n"+_DUMMY_MENTION_EXPECTED_RESULT+"<br />\n"+_DUMMY_TAG_EXPECTED_RESULT)
+        self.assertEqual(unicode(obj.transform(_DUMMY_URL_MESSAGE+"\n"+_DUMMY_MENTION_MESSAGE+"\n"+_DUMMY_TAG_MESSAGE, 
+                                               'discussion_text_out')), 
+                         _DUMMY_URL_EXPECTED_RESULT+"<br />\n"+_DUMMY_MENTION_EXPECTED_RESULT+"<br />\n"+_DUMMY_TAG_EXPECTED_RESULT)
         
     def test_nonascii(self):
         context = self._context()
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(context=context)
         obj = self._cut(context, request)
-        context.set_field_value('text', u'ÅÄÖåäö')
-        self.assertEqual(obj.transform(context.get_field_value('text')), u'ÅÄÖåäö')
+        self.assertEqual(obj.transform(u'ÅÄÖåäö', 'discussion_text_out'), u'ÅÄÖåäö')

@@ -47,6 +47,9 @@ class ProposalsComponentTests(unittest.TestCase):
         self.config.registry.settings['default_timezone_name'] = "Europe/Stockholm"
         self.config.registry.settings['default_locale_name'] = 'sv'
         self.config.include('voteit.core.models.date_time_util')
+        self.config.registry.settings['transform.proposal_text_out'] = 'auto_link\nnl2br\ntag2links\nat_userid_link'
+        self.config.include('betahaus.pyracont.transformation')
+        self.config.scan('voteit.core.models.transformation')
         self.config.scan('voteit.core.views.components.main')
         self.config.scan('voteit.core.views.components.moderator_actions')
         self.config.scan('voteit.core.views.components.creators_info')
@@ -56,7 +59,7 @@ class ProposalsComponentTests(unittest.TestCase):
                                            permissive=True)
         self._enable_catalog()
         context = self._fixture()
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(context=context)
         va = self._va()
         api = self._api(context, request)
         from voteit.core.views.components.proposals import proposal_listing

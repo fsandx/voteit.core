@@ -117,11 +117,14 @@ class AgendaItemViewTests(unittest.TestCase):
         self.config.testing_securitypolicy(userid='dummy',
                                            permissive=True)
         self.config.include('voteit.core.models.fanstatic_resources')
+        self.config.registry.settings['transform.discussion_text_out'] = 'auto_link\nnl2br\ntag2links\nat_userid_link'
+        self.config.include('betahaus.pyracont.transformation')
+        self.config.scan('voteit.core.models.transformation')
         ai = self._fixture()
         from voteit.core.models.discussion_post import DiscussionPost
         ai['dp'] = context = DiscussionPost()
         context.title = "Testing read more view"
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(context=context)
         aiv = self._cut(context, request)
         response = aiv.discussion_more()
         self.assertEqual(response['body'], context.title)

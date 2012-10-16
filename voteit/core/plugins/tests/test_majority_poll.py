@@ -178,6 +178,9 @@ class MPIntegrationTests(unittest.TestCase):
         self.config.scan('voteit.core.views.components.user_tags')
         self.config.registry.settings['default_timezone_name'] = "Europe/Stockholm"
         self.config.include('voteit.core.models.date_time_util')
+        self.config.registry.settings['transform.proposal_text_out'] = 'auto_link\nnl2br\ntag2links\nat_userid_link'
+        self.config.include('betahaus.pyracont.transformation')
+        self.config.scan('voteit.core.models.transformation')
         
         self._add_votes()
         self._close_poll()
@@ -185,5 +188,6 @@ class MPIntegrationTests(unittest.TestCase):
         request = self.request
         ai = find_interface(self.poll, IAgendaItem)
         from voteit.core.views.api import APIView
+        request.context = ai
         api = APIView(ai, request)
         self.assertTrue('p2uid' in plugin.render_result(request, api))

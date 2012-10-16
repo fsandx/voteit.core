@@ -1,38 +1,32 @@
-from pkg_resources import resource_filename
-
-from pyramid.renderers import get_renderer
-from pyramid.renderers import render
-from pyramid.security import authenticated_userid
-from pyramid.security import Authenticated
-from pyramid.security import Everyone
-from pyramid.url import resource_url
-from pyramid.traversal import find_interface
-from pyramid.traversal import find_root
-from pyramid.traversal import resource_path
-from pyramid.interfaces import IAuthenticationPolicy
-from pyramid.interfaces import IAuthorizationPolicy
-from pyramid.decorator import reify
-from pyramid.i18n import get_localizer
-from betahaus.pyracont.interfaces import IContentFactory
+from betahaus.pyracont.interfaces import IContentFactory 
 from betahaus.pyracont.interfaces import ITransformUtil
 from betahaus.viewcomponent import render_view_group
 from betahaus.viewcomponent.interfaces import IViewGroup
-from webhelpers.html.tools import auto_link
-from webhelpers.html.converters import nl2br
-from webhelpers.html.render import sanitize
+from pkg_resources import resource_filename
+from pyramid.decorator import reify
+from pyramid.i18n import get_localizer
+from pyramid.interfaces import IAuthenticationPolicy 
+from pyramid.interfaces import IAuthorizationPolicy
+from pyramid.renderers import get_renderer, render
+from pyramid.security import Authenticated 
+from pyramid.security import Everyone 
+from pyramid.security import authenticated_userid
+from pyramid.traversal import find_interface 
+from pyramid.traversal import find_root
+from pyramid.traversal import resource_path
+from pyramid.url import resource_url
 
 from voteit.core import VoteITMF as _
 from voteit.core import security
-from voteit.core.models.interfaces import IDateTimeUtil
+from voteit.core.fanstaticlib import DEFORM_RESOURCES
+from voteit.core.helpers import at_userid_link, tags2links
+from voteit.core.models.catalog import metadata_for_query
+from voteit.core.models.catalog import resolve_catalog_docid
+from voteit.core.models.interfaces import IDateTimeUtil 
 from voteit.core.models.interfaces import IFanstaticResources
 from voteit.core.models.interfaces import IFlashMessages
 from voteit.core.models.interfaces import IMeeting
 from voteit.core.models.interfaces import IUnread
-from voteit.core.models.catalog import metadata_for_query
-from voteit.core.models.catalog import resolve_catalog_docid
-from voteit.core.fanstaticlib import DEFORM_RESOURCES
-from voteit.core.helpers import at_userid_link
-from voteit.core.helpers import tags2links
 
 
 TEMPLATE_DIR = resource_filename('voteit.core.views', 'templates/')
@@ -307,14 +301,5 @@ class APIView(object):
             kw['api'] = self
         return util[key](context, request, **kw)
 
-    def transform_value(self, value, chain_name):
-        return self.transform_util(value, chain_name)
-
-    def transform(self, text):
-        text = sanitize(text)
-        text = auto_link(text, link='urls')
-        text = nl2br(text)
-        if self.meeting.get_field_value('tags_enabled', True):
-            text = tags2links(unicode(text), self.context, self.request)
-        text = at_userid_link(text, self.context, self.request)
-        return text
+    def transform(self, value, chain_name):
+        return self.transform_util.transform_value(value, chain_name, request=self.request)
