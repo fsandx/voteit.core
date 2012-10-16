@@ -428,4 +428,4 @@ class TestTransform(unittest.TestCase):
         context = self._context()
         request = testing.DummyRequest(context=context)
         obj = self._cut(context, request)
-        self.assertEqual(obj.transform(u'ÅÄÖåäö', 'discussion_text_out'), u'ÅÄÖåäö')
+        self.assertEqual(obj.transform('ÅÄÖåäö', 'discussion_text_out'), u'ÅÄÖåäö')

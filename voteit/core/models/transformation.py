@@ -4,12 +4,16 @@ from betahaus.pyracont.decorators import transformator
 from betahaus.pyracont import Transformation
 from pyramid.traversal import find_root
 from pyramid.traversal import find_interface
+from repoze.folder import unicodify
+from webhelpers.html.tools import auto_link
+from webhelpers.html import HTML
 
 from voteit.core.models.interfaces import IMeeting
 from voteit.core.models.tags import TAG_PATTERN
 
 
 AT_PATTERN = re.compile(r'(\A|\s)@([a-zA-Z1-9]{1}[\w-]+)', flags=re.UNICODE)
+NL_PATTERN = re.compile(R"\r\n|\n|\r")
 
 
 @transformator()
@@ -20,7 +24,9 @@ class AutoLink(Transformation):
         appstruct[node_name] = self.simple(appstruct[node_name], **kw)
 
     def simple(self, value, **kw):
-        from webhelpers.html.tools import auto_link
+        # making sure that value is unicode
+        value = unicodify(value)
+        
         return auto_link(value, link='urls')
 
 
@@ -32,8 +38,12 @@ class NL2BR(Transformation):
         appstruct[node_name] = self.simple(appstruct[node_name], **kw)
 
     def simple(self, value, **kw):
-        from webhelpers.html.converters import nl2br
-        return nl2br(value)
+        # making sure that value is unicode
+        value = unicodify(value)
+        
+        value = re.sub(NL_PATTERN, "\n", value)
+        value = value.replace("\n", "<br />\n")
+        return value
 
 
 @transformator()
@@ -44,9 +54,11 @@ class Tag2Links(Transformation):
         appstruct[node_name] = self.simple(appstruct[node_name], **kw)
 
     def simple(self, value, **kw):
-        from webhelpers.html import HTML
         request = kw['request']
         context = request.context
+        
+        # making sure that value is unicode
+        value = unicodify(value)
         
         meeting = find_interface(context, IMeeting)
         if not meeting.get_field_value('tags_enabled', True):
@@ -69,10 +81,12 @@ class AtUseridLink(Transformation):
         appstruct[node_name] = self.simple(appstruct[node_name], **kw)
 
     def simple(self, value, **kw):
-        from webhelpers.html import HTML
         request = kw['request']
         context = request.context
 
+        # making sure that value is unicode
+        value = unicodify(value)
+        
         users = find_root(context).users
         meeting = find_interface(context, IMeeting)
     

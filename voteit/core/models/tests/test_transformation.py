@@ -38,8 +38,8 @@ class AutoLinkTests(unittest.TestCase):
 
     def test_simple(self):
         obj = self._cut()
-        text = "There's no place like https://127.0.0.1"
-        expected = 'There&#39;s no place like <a href="https://127.0.0.1">https://127.0.0.1</a>'
+        text = "There's no place like https://127.0.0.1 or åäöÅÄÖ"
+        expected = u'There&#39;s no place like <a href="https://127.0.0.1">https://127.0.0.1</a> or åäöÅÄÖ'
         self.assertEqual(obj.simple(text), expected)
 
     def test_integration(self):
@@ -76,8 +76,8 @@ class NL2BRTests(unittest.TestCase):
 
     def test_simple(self):
         obj = self._cut()
-        expected = "with<br />\nsome<br />\nlinebreaks"
-        self.assertEqual(obj.simple("with\nsome\nlinebreaks"), expected)
+        expected = u"with<br />\nsome<br />\nlinebreaks<br />\nåäöÅÄÖ"
+        self.assertEqual(obj.simple("with\nsome\nlinebreaks\nåäöÅÄÖ"), expected)
 
     def test_integration(self):
         self.config.scan('voteit.core.models.transformation')
@@ -129,8 +129,8 @@ class AtUseridLinkTests(unittest.TestCase):
 
     def test_several_names_with_nonexistent_user(self):
         obj = self._cut()
-        value = obj.simple('@admin says hello to @john_doe', request=self.request)
-        expected = '<a class="inlineinfo" href="/m/_userinfo?userid=admin" title="VoteIT Administrator">@admin</a> says hello to @john_doe'
+        value = obj.simple('@admin says hello to @john_doe and @jöhn_döe', request=self.request)
+        expected = u'<a class="inlineinfo" href="/m/_userinfo?userid=admin" title="VoteIT Administrator">@admin</a> says hello to @john_doe and @jöhn_döe'
         self.assertEqual(value, expected)
 
 
@@ -165,7 +165,7 @@ class Tags2LinksTests(unittest.TestCase):
 
     def test_simple(self):
         obj = self._cut()
-        value = obj.simple(u'#åäöÅÄÖ', request=self.request)
+        value = obj.simple('#åäöÅÄÖ', request=self.request)
         self.assertIn(u'/m/ai/?tag=%C3%A5%C3%A4%C3%B6%C3%85%C3%84%C3%96', value)
 
     def test_appstruct(self):
